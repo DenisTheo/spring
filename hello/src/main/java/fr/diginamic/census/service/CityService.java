@@ -1,7 +1,7 @@
-package fr.diginamic.service;
+package fr.diginamic.census.service;
 
-import fr.diginamic.dao.CityDao;
-import fr.diginamic.model.City;
+import fr.diginamic.census.dao.CityDAO;
+import fr.diginamic.census.model.City;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -14,14 +14,14 @@ public class CityService
 {
 	// DAO to manage the Entity
 	@Autowired
-	private CityDao cityDao;
+	private CityDAO cityDao;
 
 	/**
 	 * Extracts all Cities in DB
 	 * 
 	 * @return all Cities
 	 */
-	public List<City> extractCities()
+	public List<City> getAllCities()
 	{
 		return cityDao.extractCities();
 	}
@@ -57,7 +57,7 @@ public class CityService
 	public List<City> insertCity(City city)
 	{
 		cityDao.insertCity(city);
-		return extractCities();
+		return getAllCities();
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class CityService
 	public List<City> editCity(int id, City data)
 	{
 		cityDao.editCity(id, data);
-		return extractCities();
+		return getAllCities();
 	}
 
 	/**
@@ -82,6 +82,12 @@ public class CityService
 	public List<City> deleteCity(int id)
 	{
 		cityDao.deleteCity(id);
-		return extractCities();
+		return getAllCities();
+	}
+
+	public String exportCitiesToCsv()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

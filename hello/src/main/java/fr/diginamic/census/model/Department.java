@@ -1,13 +1,17 @@
-package fr.diginamic.model;
+package fr.diginamic.census.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,20 +23,22 @@ import java.util.List;
 //@Table(name="department")
 public class Department
 {
-	// DB ID of the Department
+	// Department's Zip code
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
+	@NotBlank(message="Department Zip Code is required")
+	@Min(value=001, message="Department code must be between 001 and 999")
+	@Max(value=999, message="Department code must be between 001 and 999")
+	private int code;
+	
 	// Name of the Department
-	private String name;
-
-	// Department's Zip code
-	private String code;
+	@NotBlank(message="Department name is required")
+    @Size(min=3, message="Department name must have at least 3 characters")
+    private String name;
 
 	// All the Cities within this Department
-	@OneToMany(mappedBy = "department")
-	private List<City> cities = new ArrayList<>();
+	@OneToMany(mappedBy="department", cascade=CascadeType.ALL)
+    private List<City> cities = new ArrayList<>();
 
 	/**
 	 * Default constructor, just in case it's needed
@@ -50,23 +56,23 @@ public class Department
 	}
 
 	/**
-	 * ID Getter
+	 * Zip Code Getter
 	 * 
-	 * @return Department's ID
+	 * @return The Zip Code
 	 */
-	public int getId()
+	public int getZipCode()
 	{
-		return id;
+		return code;
 	}
 
 	/**
-	 * ID Setter
+	 * Zip Code Setter
 	 * 
-	 * @param id The ID to be set
+	 * @param code The Zip Code to be set
 	 */
-	public void setId(int id)
+	public void setZipCode(int code)
 	{
-		this.id = id;
+		this.code = code;
 	}
 
 	/**
@@ -108,4 +114,14 @@ public class Department
 	{
 		this.cities = cities;
 	}
+	
+	/**
+	 * Gets population of the combined cities of the department
+	 * 
+	 * @return total population of cities within department
+	 */
+	public int getPopulation()
+	{
+        return cities.stream().mapToInt(City::getPopCount).sum();
+    }
 }

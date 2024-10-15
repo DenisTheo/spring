@@ -1,7 +1,7 @@
-package fr.diginamic.repository;
+package fr.diginamic.census.repository;
 
-import fr.diginamic.model.City;
-import fr.diginamic.model.Department;
+import fr.diginamic.census.model.City;
+import fr.diginamic.census.model.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

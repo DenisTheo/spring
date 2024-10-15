@@ -1,13 +1,17 @@
-package fr.diginamic.model;
+package fr.diginamic.census.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+//import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+//import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 /**
  * Represents a City with a name and a population count
@@ -19,14 +23,18 @@ public class City
 	// ID of the object
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Min(value = 1, message="ID cannot be negative.")
 	private int id;
 	
 	// City Name
-	@NotBlank(message = "Name cannot be empty")
+	@NotNull(message="City name cannot be Null")
+    @Size(min=2, message="City name must have at least two letters")
+    @Column(name="name", nullable=false)
 	private String name;
 	
 	// Population Count
-	@Positive(message = "Population count must be positive")
+	@Positive(message="Population count must be positive")
+    @Column(name="population")
 	private int popCount;
 	
     // Reference to the City's Department

@@ -1,7 +1,7 @@
-package fr.diginamic.dao;
+package fr.diginamic.census.dao;
 
-import fr.diginamic.model.City;
-import fr.diginamic.model.Department;
+import fr.diginamic.census.model.City;
+import fr.diginamic.census.model.Department;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  * DAO for City Entity
  */
 @Service
-public class CityDao
+public class CityDAO
 {
 	// Manager
 	@PersistenceContext

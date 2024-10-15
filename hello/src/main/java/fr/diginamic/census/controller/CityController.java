@@ -1,27 +1,33 @@
-package fr.diginamic.model.controller;
+package fr.diginamic.census.controller;
 
-import fr.diginamic.model.City;
-import fr.diginamic.model.Department;
-import fr.diginamic.repository.CityRepository;
+import fr.diginamic.census.dto.CityDTO;
+import fr.diginamic.census.model.City;
+import fr.diginamic.census.model.Department;
+import fr.diginamic.census.repository.CityRepository;
+import fr.diginamic.census.service.CityService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**
  * Controller for the City Entity
  */
 @RestController
-@RequestMapping("/city")
+@RequestMapping("/cities")
 public class CityController
 {
-
 	@Autowired
 	private CityRepository cityRepository;
+	
+	@Autowired
+    private CityService cityService;
 
 	/**
 	 * Gets a paginated list of cities.
@@ -31,7 +37,8 @@ public class CityController
 	 * @return a paginated list of cities
 	 */
 	@GetMapping("/cities")
-	public Page<City> listCities(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size)
+	public Page<City> listCities(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size)
 	{
 		return cityRepository.findAll(PageRequest.of(page, size));
 	}
@@ -97,7 +104,7 @@ public class CityController
 	public List<City> getCitiesInDepartmentByMinPopulation(@PathVariable int departmentId, @PathVariable int min)
 	{
 		Department department = new Department();
-		department.setId(departmentId); // Assuming you set the department by its ID
+		department.setZipCode(departmentId); // Assuming you set the department by its ID
 		return cityRepository.findCitiesWithPopOverInDepartment(department, min);
 	}
 
@@ -110,10 +117,11 @@ public class CityController
 	 * @return a list of cities
 	 */
 	@GetMapping("/searchByDepartmentAndPopRange/{departmentId}/{min}/{max}")
-	public List<City> getCitiesInDepartmentByPopulationRange(@PathVariable int departmentId, @PathVariable int min, @PathVariable int max)
+	public List<City> getCitiesInDepartmentByPopulationRange(@PathVariable int departmentId, @PathVariable int min,
+			@PathVariable int max)
 	{
 		Department department = new Department();
-		department.setId(departmentId);
+		department.setZipCode(departmentId);
 		return cityRepository.findCitiesWithPopWithinRangeInDepartment(department, min, max);
 	}
 
@@ -128,33 +136,56 @@ public class CityController
 	public List<City> getTopNCitiesInDepartment(@PathVariable int departmentId, @PathVariable int n)
 	{
 		Department department = new Department();
-		department.setId(departmentId);
+		department.setZipCode(departmentId);
 		return cityRepository.findMostPopulatedCitiesInDepartment(department, PageRequest.of(0, n)).getContent();
 	}
 
 	/**
-	 * Adds a new city.
+	 * Retrieves all cities.
+	 *
+	 * @return list of cities
+	 */
+	@GetMapping
+	public ResponseEntity<List<City>> getAllCities()
+	{
+		return ResponseEntity.ok(cityService.getAllCities());
+	}
+
+	/**
+	 * Adds a new city with validation.
 	 *
 	 * @param city City to add
 	 * @return response
 	 */
 	@PostMapping("/add")
-	public ResponseEntity<String> addCity(@RequestBody City city)
+	public ResponseEntity<String> addCity(@Valid @RequestBody City city, BindingResult result)
 	{
+		if (result.hasErrors())
+		{
+			// If validation errors are detected, return 400 Bad Request
+			return new ResponseEntity<>("Validation error: " + result.getFieldErrors(), HttpStatus.BAD_REQUEST);
+		}
+
 		cityRepository.save(city);
 		return new ResponseEntity<>("City added successfully", HttpStatus.CREATED);
 	}
 
 	/**
-	 * Edits an existing city.
+	 * Edits an existing city with validation.
 	 *
 	 * @param id   ID of the city to edit
 	 * @param data city object with updated data
 	 * @return response
 	 */
 	@PutMapping("/edit/{id}")
-	public ResponseEntity<String> editCity(@PathVariable int id, @RequestBody City data)
+	public ResponseEntity<String> editCity(@PathVariable int id, @Valid @RequestBody City data, BindingResult result)
 	{
+		if (result.hasErrors())
+		{
+			// If validation errors are detected, return 400 Bad Request
+			return new ResponseEntity<>("Validation error: " + result.getFieldErrors(), HttpStatus.BAD_REQUEST);
+		}
+
 		return cityRepository.findById(id).map(existingCity ->
 		{
 			existingCity.setName(data.getName());
@@ -164,6 +195,16 @@ public class CityController
 			return new ResponseEntity<>("Successfully updated city", HttpStatus.OK);
 		}).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 	}
+	
+	/**
+     * Export cities to CSV.
+     *
+     * @return CSV file content as a String
+     */
+    @GetMapping("/export-csv")
+    public String exportCitiesToCsv() {
+        return cityService.exportCitiesToCsv();
+    }
 
 	/**
 	 * Deletes a city.
